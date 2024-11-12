@@ -1,0 +1,314 @@
+/* General Layout */
+.trip-recommendations {
+  font-family: Arial, sans-serif;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+  background-color: transparent;
+  color: #000;
+}
+
+.trip-recommendations h1 {
+  font-size: 2em;
+  margin-bottom: 20px;
+  color: #000;
+}
+
+/* Flex Layout for Sections */
+.service-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  padding-bottom: 10px;
+}
+
+/* Section Styling */
+.section {
+  all: unset;
+  display: block;
+  background-color: #ffffff;
+  color: #000;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 50px 20px 20px; /* Increased top padding to accommodate the icon */
+  width: 250px;
+  text-align: center;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  position: relative;
+}
+
+
+.section:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Expanded Section Styling */
+.section.expanded {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: auto;
+  max-width: 90%;
+  max-height: 90vh;
+  padding: 30px;
+  z-index: 10;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  background-color: #ffffff;
+  color: #000;
+}
+
+/* Circular Icon at the Top */
+.section-icon {
+  width: 60px;
+  height: 60px;
+  background-color: #6a0dad;
+  color: #fff; /* White icon color */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em; /* Larger font size */
+  margin: 0 auto 10px; /* Centered horizontally with proper spacing below */
+  position: relative;
+  top: -30px; /* Move icon upward */
+  z-index: 1;
+}
+
+
+/* Heading and Text */
+.section h2 {
+  font-size: 1.2em;
+  color: #000;
+  margin: 10px 0;
+}
+
+.section .content {
+  font-size: 0.9em;
+  color: #000;
+  line-height: 1.4;
+  max-height: 8.4em;
+  overflow: hidden;
+  position: relative;
+  padding-right: 1em;
+}
+
+.section .content::after {
+  content: '...';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 1.4em;
+  background: linear-gradient(to right, transparent, #ffffff 50%);
+  text-align: right;
+  padding-right: 0.5em;
+  font-weight: bold;
+  color: #000;
+}
+
+.section.expanded .content {
+  max-height: none;
+  overflow: visible;
+}
+
+.section.expanded .content::after {
+  display: none;
+}
+
+/* Close Button Styling */
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #000;
+  cursor: pointer;
+  outline: none;
+}
+
+.close-button:hover {
+  color: #ff5c5c;
+}
+
+/* Minimized Sections */
+.section.minimized {
+  opacity: 0.2;
+  transform: scale(0.8);
+  pointer-events: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .service-section {
+    flex-direction: column;
+  }
+
+  .section {
+    width: 100%;
+  }
+}
+
+.transportation-content h4 {
+  margin-top: 15px;
+  font-size: 1.2em;
+  color: #007bff;
+}
+
+.transportation-content p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+.transportation-content a {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.hotel-option {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hotel-option h3 {
+  font-size: 1.5em;
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.stars .star {
+  color: gold;
+  margin-left: 5px;
+  font-size: 1.2em;
+}
+
+.hotel-option div {
+  margin: 5px 0;
+  color: #000;
+}
+
+.flight-option {
+  background-color: #ffffff;
+  color: #333;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin: 20px 0;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.flight-option h3 {
+  font-size: 1.5em;
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.flight-details p {
+  font-size: 1em;
+  color: #333;
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.flight-details p strong {
+  font-weight: bold;
+  color: #555;
+}
+
+.flight-option a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.flight-option a:hover {
+  text-decoration: underline;
+}
+
+.flight-option h4 {
+  font-size: 1.2em;
+  color: #555;
+  margin-top: 15px;
+  margin-bottom: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.render-flights-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.itinerary-content {
+  margin-top: 20px;
+}
+
+.itinerary-day-header {
+  font-size: 1.5em;
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.activity-item {
+  margin-bottom: 15px;
+  padding-left: 10px;
+}
+
+.activity-item p {
+  margin: 5px 0;
+  line-height: 1.6;
+}
+
+.activity-item a {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.budget-breakdown-content h4 {
+  color: #007bff;
+  font-size: 1.2em;
+  margin-top: 10px;
+}
+
+.budget-breakdown-content p {
+  margin: 5px 0;
+  line-height: 1.6;
+}
+
+.budget-breakdown-content a {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.additional-tips-content h4 {
+  color: #007bff;
+  font-size: 1.2em;
+  margin-top: 10px;
+}
+
+.additional-tips-content p {
+  margin: 5px 0;
+  line-height: 1.6;
+}
+
+.additional-tips-content a {
+  color: #007bff;
+  text-decoration: underline;
+}

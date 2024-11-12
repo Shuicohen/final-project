@@ -1,0 +1,186 @@
+/* Saved Trips Container */
+.saved-trips {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Title Styling */
+.saved-trips h2 {
+  text-align: center;
+  font-size: 2em;
+  margin-bottom: 20px;
+  color: #000; /* Set title color to black */
+}
+
+/* Trip Card Styling */
+.trip-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  position: relative;
+  color: #000; /* Set all text to black */
+}
+
+/* Expanded Trip Card Styling */
+.trip-card.expanded {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-height: 90vh;
+  padding: 30px;
+  z-index: 10;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  background-color: #ffffff;
+  color: #000;
+}
+
+.destination-text {
+  color: #000; /* Black color */
+}
+
+/* Section Header Styling */
+.section-header {
+  font-weight: bold;
+  font-size: 1.25em;
+  text-align: center;
+  margin: 20px 0 10px;
+  color: #333; /* Slightly dark gray for contrast */
+}
+
+/* Flight and Hotel Details */
+.flight-details, .hotel-details, .itinerary-day {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #f0f0f0; /* Light gray background for contrast */
+}
+
+/* Day and Activity Titles */
+.itinerary-day h5,
+.flight-details h5,
+.hotel-details h5 {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Close Button Styling */
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #333;
+  cursor: pointer;
+  outline: none;
+}
+
+.close-button:hover {
+  color: #ff5c5c; /* Hover color for close button */
+}
+
+/* Delete Button Styling */
+.delete-button {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: #ffffff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background 0.3s ease, transform 0.3s ease;
+  margin-top: 15px;
+  display: inline-block;
+}
+
+.delete-button:hover {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  transform: scale(1.05);
+}
+
+.delete-button:active {
+  transform: scale(0.95);
+}
+
+/* Centered Loading Container */
+.loading-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 1000; /* Ensures it appears on top of other content */
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .trip-card {
+    padding: 15px;
+  }
+
+  .saved-trips h2 {
+    font-size: 1.5em;
+  }
+
+  .trip-card h3 {
+    font-size: 1.25em;
+  }
+
+  .trip-card h4 {
+    font-size: 1.1em;
+  }
+}
+
+/* Text Content */
+.flight-details p,
+.hotel-details p,
+.itinerary-day p {
+  font-size: 1em;
+  color: #555;
+  margin: 5px 0;
+}
+
+/* Additional Styling for Links */
+a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+a:hover {
+  text-decoration: underline;
+}

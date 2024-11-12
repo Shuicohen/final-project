@@ -1,0 +1,13 @@
+.footer {
+    flex-shrink: 0;
+    background-color: transparent;
+    color: #ecf0f1;
+    padding: 1rem 0;
+    text-align: center;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
