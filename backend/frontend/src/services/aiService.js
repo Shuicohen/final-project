@@ -147,10 +147,9 @@ function parseAdditionalTipsResponse(content) {
 }
 
 export async function generateFullItinerary(tripDetails) {
-  const { destination, startDate, endDate, travelers, budget, currency, origin } = tripDetails;
+  const { destination, startDate, endDate, travelers, budget, currency, origin, preferences } = tripDetails;
   const tripDuration = getTripDuration(startDate, endDate);
 
-  // Extract labels from `origin` and `destination` if they are objects
   const tripDetailsForAI = {
     origin: typeof origin === 'object' ? origin.label : origin,
     destination: typeof destination === 'object' ? destination.label : destination,
@@ -158,11 +157,12 @@ export async function generateFullItinerary(tripDetails) {
     endDate,
     travelers,
     budget,
-    currency
+    currency,
+    preferences
   };
 
   const prompts = {
-    flights: `Provide 2-3 detailed flight options from ${tripDetailsForAI.origin} to ${tripDetailsForAI.destination} for a trip on ${tripDetailsForAI.startDate} and a return on ${tripDetailsForAI.endDate}. For each option, include:
+    flights: `Provide 2-3 detailed flight options from ${tripDetailsForAI.origin} to ${tripDetailsForAI.destination} for a trip on ${tripDetailsForAI.startDate} and a return on ${tripDetailsForAI.endDate}. Take into account a preference for ${tripDetailsForAI.preferences}. For each option, include:
       - Airline name
       - Flight number
       - Departure and arrival times
@@ -170,7 +170,7 @@ export async function generateFullItinerary(tripDetails) {
       - Estimated price
       - Booking link.
     `,
-    accommodation: `I need information on three distinct hotels in ${tripDetailsForAI.destination} for a ${tripDuration}-day trip from ${tripDetailsForAI.startDate} to ${tripDetailsForAI.endDate} with a total budget of ${tripDetailsForAI.budget} ${tripDetailsForAI.currency}. For each hotel, include:
+    accommodation: `I need information on three distinct hotels in ${tripDetailsForAI.destination} for a ${tripDuration}-day trip from ${tripDetailsForAI.startDate} to ${tripDetailsForAI.endDate} with a total budget of ${tripDetailsForAI.budget} ${tripDetailsForAI.currency}. Take into account a preference for ${tripDetailsForAI.preferences}. For each hotel, include:
       - Hotel name and star rating, beginning each hotel with "Hotel 1:", "Hotel 2:", and "Hotel 3:"
       - Location with nearby attractions
       - Nightly rate and total rate for all nights
@@ -178,27 +178,15 @@ export async function generateFullItinerary(tripDetails) {
       - Brief description
       - Booking link.
     `,
-    transportation: `Recommend the best mode of local transportation in ${tripDetailsForAI.destination}. If car rental is advised, suggest 2-3 options with prices and booking link.`,
-    dailyItinerary: `Create a detailed itinerary for each day of a ${tripDuration}-day trip to ${tripDetailsForAI.destination}. For each day, include:
+    transportation: `Recommend the best mode of local transportation in ${tripDetailsForAI.destination}. Take into account a preference for ${tripDetailsForAI.preferences}. If car rental is advised, suggest 2-3 options with prices and booking link.`,
+    dailyItinerary: `Create a detailed itinerary for each day of a ${tripDuration}-day trip to ${tripDetailsForAI.destination}. Include activities that match a preference for ${tripDetailsForAI.preferences}. For each day, include:
       - Morning activity with location, description, and link
       - Lunch recommendation with restaurant name, cuisine, price range, and link
       - Afternoon activity with details and link
       - Dinner recommendation with details and link
     `,
-    budgetBreakdown: `Provide an estimated budget breakdown for a ${tripDuration}-day trip to ${tripDetailsForAI.destination} for ${tripDetailsForAI.travelers} traveler(s) with a budget of ${tripDetailsForAI.budget} ${tripDetailsForAI.currency}. Include estimated costs for:
-      - Flights
-      - Accommodation
-      - Local transportation
-      - Daily meals
-      - Activities and attractions
-      - Miscellaneous expenses
-    `,
-    additionalTips: `Provide additional travel tips for ${tripDetailsForAI.destination} including:
-      - Local customs, tipping practices, or etiquette
-      - Must-try local dishes
-      - Weather information
-      - Links to reputable travel guides
-    `
+    budgetBreakdown: `Provide an estimated budget breakdown for a ${tripDuration}-day trip to ${tripDetailsForAI.destination} for ${tripDetailsForAI.travelers} traveler(s) with a budget of ${tripDetailsForAI.budget} ${tripDetailsForAI.currency}. Include costs for flights, accommodation, local transportation, daily meals, activities, and attractions, considering a preference for ${tripDetailsForAI.preferences}.`,
+    additionalTips: `Provide additional travel tips for ${tripDetailsForAI.destination} with a focus on ${tripDetailsForAI.preferences}. Include local customs, must-try local dishes, weather information, and links to reputable travel guides.`
   };
 
   const itinerarySections = {};
@@ -218,9 +206,9 @@ export async function generateFullItinerary(tripDetails) {
         case 'dailyItinerary':
           itinerarySections[section] = parseDailyItineraryResponse(content);
           break;
-        case 'budgetBreakdown':
-          itinerarySections[section] = parseBudgetBreakdownResponse(content);
-          break;
+          case 'budgetBreakdown':
+            itinerarySections[section] = parseBudgetBreakdownResponse(content);
+            break;
         case 'additionalTips':
           itinerarySections[section] = parseAdditionalTipsResponse(content);
           break;
