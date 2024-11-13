@@ -18,6 +18,7 @@ function Login() {
     try {
       const data = await loginUser(emailOrUsername, password);
       login(data.user);
+      alert(`Welcome back, ${data.user.username || 'User'}!`); // Display welcome message
       navigate('/');
     } catch (err) {
       setError(err.message || 'Failed to log in');
