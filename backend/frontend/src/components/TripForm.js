@@ -40,6 +40,7 @@ function TripForm({ onSubmit }) {
   const currencies = [
     { code: 'USD', name: 'US Dollar' },
     { code: 'ILS', name: 'Israeli Shekel' },
+    { code: 'ZAR', name: 'South African Rand' },
     { code: 'EUR', name: 'Euro' },
     { code: 'GBP', name: 'British Pound' },
     { code: 'JPY', name: 'Japanese Yen' },
@@ -187,6 +188,18 @@ function TripForm({ onSubmit }) {
           value={formData.travelers}
           onChange={(e) => handleChange('travelers', e.target.value)}
           min="1"
+        />
+      </div>
+            {/* Add new Preferences input */}
+            <div className="form-group">
+        <label htmlFor="preferences">Preferences</label>
+        <input
+          type="text"
+          id="preferences"
+          name="preferences"
+          value={formData.preferences}
+          onChange={(e) => handleChange('preferences', e.target.value)}
+          placeholder="E.g., beach, adventure, family-friendly"
         />
       </div>
       <button type="submit" className="submit-button">Plan My Trip</button>
