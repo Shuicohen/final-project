@@ -28,8 +28,8 @@ function Home() {
               <p>Choose from a range of hotels, hostels, and vacation rentals that fit your budget and style.</p>
             </div>
             <div className="feature">
-              <h3>Plan Itineraries</h3>
-              <p>Get custom itinerary suggestions based on your interests and travel goals.</p>
+              <h3>Plan Your Trip</h3>
+              <p>Get custom trip suggestions based on your interests and travel goals.</p>
             </div>
             <div className="feature">
               <h3>Explore Local Attractions</h3>
