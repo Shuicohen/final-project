@@ -74,7 +74,7 @@ function TripPlanner() {
       alert('Trip saved successfully!');
       setTimeout(() => setAnimateTick(false), 800); // Reset animation after it completes
     } catch (err) {
-      setError('Failed to save trip. Please try again.');
+      alert('You have already saved this trip.');
       console.error('Error saving trip:', err);
     }
   };
