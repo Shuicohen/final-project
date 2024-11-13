@@ -23,6 +23,7 @@ function Register() {
 
     try {
       await registerUser(username, email, password);
+      alert(`Welcome, ${username}! Your account has been created successfully.`);
       navigate('/login');
     } catch (err) {
       setError(err.message || 'Failed to create an account');
@@ -88,3 +89,4 @@ function Register() {
 }
 
 export default Register;
+
