@@ -21,30 +21,42 @@ app.use(cookieParser());
 // Use tripRoutes to handle trip-related routes
 app.use('/api/trips', tripRoutes);
 
-const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-if (!PERPLEXITY_API_KEY) {
-  console.error('PERPLEXITY_API_KEY is not set in the environment variables');
+if (!OPENAI_API_KEY) {
+  console.error('OPENAI_API_KEY is not set in the environment variables');
   process.exit(1);
 }
 
 app.post('/api/generate-trip', async (req, res) => {
   try {
     console.log('Received request:', req.body);
-    const response = await axios.post('https://api.perplexity.ai/chat/completions', req.body, {
+
+    const openAiPayload = {
+      model: "gpt-4-turbo",
+      messages: [
+        { role: "system", content: "You are a helpful AI travel assistant." },
+        { role: "user", content: req.body.prompt }
+      ],
+      max_tokens: 1500
+    };
+
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', openAiPayload, {
       headers: {
-        'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json'
       }
     });
-    console.log('Perplexity API response:', response.data);
+
+    console.log('OpenAI API response:', JSON.stringify(response.data, null, 2)); // Logs AI response
+
     res.json(response.data);
   } catch (error) {
     console.error('Error in /api/generate-trip:', error);
     if (error.response) {
-      console.error('Perplexity API error response:', error.response.data);
+      console.error('OpenAI API error response:', error.response.data);
       res.status(error.response.status).json({
-        error: 'Error from Perplexity API',
+        error: 'Error from OpenAI API',
         details: error.response.data
       });
     } else {
@@ -55,6 +67,8 @@ app.post('/api/generate-trip', async (req, res) => {
     }
   }
 });
+
+
 
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
@@ -111,3 +125,4 @@ app.get('/auth/verify', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
