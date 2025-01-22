@@ -20,7 +20,7 @@ async function generateSection(prompt) {
       }
     });
 
-    console.log('AI Response:', JSON.stringify(response.data, null, 2)); // Logs AI response
+    
 
     const content = response.data.choices[0].message.content;
     return content;
@@ -97,7 +97,7 @@ function formatTime(timeString) {
 function parseDailyItineraryResponse(content) {
   if (!content || typeof content !== 'string') return [];
 
-  console.log("🔍 AI Itinerary Raw Response:", content); // Debugging log
+
 
   const days = content.split(/### Day \d+:/).slice(1);
   return days.map(dayText => {
@@ -130,7 +130,7 @@ function parseDailyItineraryResponse(content) {
 
     if (Object.keys(currentActivity).length > 0) activities.push(currentActivity);
     
-    console.log("✅ Parsed Itinerary Day:", { title, activities }); // Debugging log
+    
 
     return { title, activities };
   });
