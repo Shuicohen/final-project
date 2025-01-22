@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './TripRecommendations.css';
 
 function TripRecommendations({ recommendations }) {
   const [expandedSection, setExpandedSection] = useState(null);
   const [nights, setNights] = useState(2);
+
+  // ✅ useEffect to log and debug daily itinerary
+  useEffect(() => {
+    if (recommendations && recommendations.dailyItinerary) {
+      console.log("✅ Updated Daily Itinerary:", recommendations.dailyItinerary);
+    } else {
+      console.log("❌ No Itinerary Data Available");
+    }
+  }, [recommendations.dailyItinerary]); // Runs when dailyItinerary updates
 
   const toggleSection = (section) => {
     setExpandedSection((prev) => (prev === section ? null : section));
@@ -18,7 +27,6 @@ function TripRecommendations({ recommendations }) {
       )}
       <div className="section-icon">{icon}</div>
       <h2>{title}</h2>
-      {/* Expand section when clicking on content area */}
       <div className="content" onClick={() => toggleSection(sectionName)}>
         {content}
       </div>
@@ -30,29 +38,16 @@ function TripRecommendations({ recommendations }) {
       {Array.isArray(recommendations.flights) && recommendations.flights.length > 0 ? (
         recommendations.flights.map((flight, index) => (
           <div key={index} className="flight-option">
-            <h3>Option {index + 1}: {flight.airline || 'Airline not specified'}</h3>
-            <div className="flight-details">
-              <p><strong>Flight Number:</strong> {flight.flightNumber || 'N/A'}</p>
-              <p><strong>Departure:</strong> {flight.departure || 'N/A'}</p>
-              <p><strong>Arrival:</strong> {flight.arrival || 'N/A'}</p>
-              <p><strong>Duration:</strong> {flight.duration || 'N/A'}</p>
-              <p><strong>Estimated Price:</strong> ${flight.price || 'N/A'}</p>
-              <p>
-                <strong>Booking Link:</strong>{' '}
-                <a href={flight.bookingLink || '#'} target="_blank" rel="noopener noreferrer">
-                  Book Here
-                </a>
-              </p>
-              {flight.returnFlight && (
-                <>
-                  <h4>Return Flight</h4>
-                  <p><strong>Flight Number:</strong> {flight.returnFlight.flightNumber || 'N/A'}</p>
-                  <p><strong>Departure:</strong> {flight.returnFlight.departure || 'N/A'}</p>
-                  <p><strong>Arrival:</strong> {flight.returnFlight.arrival || 'N/A'}</p>
-                  <p><strong>Duration:</strong> {flight.returnFlight.duration || 'N/A'}</p>
-                </>
-              )}
-            </div>
+            <h3>Option {index + 1}: {flight.airline}</h3>
+            <p><strong>Flight Number:</strong> {flight.flightNumber}</p>
+            <p><strong>Departure:</strong> {flight.departure}</p>
+            <p><strong>Arrival:</strong> {flight.arrival}</p>
+            <p><strong>Duration:</strong> {flight.duration}</p>
+            <p><strong>Layovers:</strong> {flight.layovers}</p>
+            <p><strong>Estimated Price:</strong> {flight.price}</p>
+            <p>
+              <strong>Booking Link:</strong> <span dangerouslySetInnerHTML={{ __html: flight.bookingLink }} />
+            </p>
           </div>
         ))
       ) : (
@@ -60,6 +55,10 @@ function TripRecommendations({ recommendations }) {
       )}
     </div>
   );
+  
+  
+  
+  
   
 
   const renderStars = (stars) => {
@@ -71,40 +70,27 @@ function TripRecommendations({ recommendations }) {
   const renderAccommodation = () => (
     <div>
       {Array.isArray(recommendations.accommodation) && recommendations.accommodation.length > 0 ? (
-        recommendations.accommodation.map((hotel, index) => {
-          const nightlyRate = parseFloat(hotel.nightlyRate);
-          const totalRate = !isNaN(nightlyRate) && nights ? (nightlyRate * nights).toFixed(2) : null;
-  
-          return (
-            <div key={index} className="hotel-option">
-              <h3>
-                {hotel.name ? hotel.name.replace(/\*\*/g, '') : 'Hotel Name Unavailable'} 
-                {hotel.stars && (
-                  <span className="stars">
-                    {renderStars(parseInt(hotel.stars, 10))}
-                  </span>
-                )}
-              </h3>
-              <div><strong>Location:</strong> {hotel.location ? hotel.location.replace(/\*\*/g, '') : 'Location unavailable'}</div>
-              <div><strong>Nearby Attractions:</strong> {hotel.nearbyAttractions ? hotel.nearbyAttractions.replace(/\*\*/g, '') : 'No nearby attractions listed'}</div>
-              <div><strong>Nightly Rate:</strong> {nightlyRate ? `$${nightlyRate}` : 'Rate unavailable'}</div>
-              <div><strong>Total Rate for {nights} Nights:</strong> {totalRate ? `$${totalRate}` : 'Total rate unavailable'}</div>
-              <div><strong>Amenities:</strong> {hotel.amenities ? hotel.amenities.replace(/\*\*/g, '') : 'Information not available'}</div>
-              <div><strong>Description:</strong> {hotel.description ? hotel.description.replace(/\*\*/g, '') : 'No description available'}</div>
-              <div>
-                <strong>Booking Link:</strong>{' '}
-                <a href={hotel.bookingLink || '#'} target="_blank" rel="noopener noreferrer">
-                  {hotel.bookingLink ? 'Book Now' : 'Booking link unavailable'}
-                </a>
-              </div>
-            </div>
-          );
-        })
+        recommendations.accommodation.map((hotel, index) => (
+          <div key={index} className="hotel-option">
+            <h3>{hotel.name} {hotel.stars ? `(${hotel.stars}★)` : ''}</h3>
+            <p><strong>Location:</strong> {hotel.location}</p>
+            <p><strong>Nearby Attractions:</strong> {hotel.nearbyAttractions}</p>
+            <p><strong>Nightly Rate:</strong> {hotel.nightlyRate}</p>
+            <p><strong>Total Rate for Stay:</strong> {hotel.totalRate}</p>
+            <p><strong>Amenities:</strong> {hotel.amenities}</p>
+            <p><strong>Description:</strong> {hotel.description}</p>
+            <p>
+              <strong>Booking Link:</strong> <span dangerouslySetInnerHTML={{ __html: hotel.bookingLink }} />
+            </p>
+          </div>
+        ))
       ) : (
         <p>No accommodation information available.</p>
       )}
     </div>
   );
+  
+  
   
   
 
@@ -152,48 +138,47 @@ function TripRecommendations({ recommendations }) {
   };
   
   
-
-  const renderDailyItinerary = () => (
-    <div className="itinerary-content">
-      {Array.isArray(recommendations.dailyItinerary) && recommendations.dailyItinerary.length > 0 ? (
-        recommendations.dailyItinerary.map((day, dayIndex) => (
-          <div key={dayIndex} className="day-itinerary">
-            <h3 className="itinerary-day-header">Day {dayIndex + 1}</h3>
-            {day.activities.map((activity, index) => (
-              <div key={index} className="activity-item">
-                <p>
-                  <strong>{activity.title.replace(/\*/g, '')}:</strong> {activity.name.replace(/\*/g, '')} ({activity.time?.replace(/\*/g, '') || 'Time not specified'})
-                </p>
-                {activity.location && (
-                  <p><strong>Location:</strong> {activity.location.replace(/\*/g, '')}</p>
-                )}
-                {activity.description && (
-                  <p><strong>Description:</strong> {activity.description.replace(/\*/g, '')}</p>
-                )}
-                {activity.link && (
-                  <p>
-                    <strong>Link:</strong>{' '}
-                    <a href={activity.link.replace(/\*/g, '')} target="_blank" rel="noopener noreferrer">
-                      {activity.linkText?.replace(/\*/g, '') || 'More Info'}
-                    </a>
-                  </p>
-                )}
-                {activity.cuisine && (
-                  <>
-                    <p><strong>Restaurant Name:</strong> {activity.name.replace(/\*/g, '')}</p>
-                    <p><strong>Cuisine:</strong> {activity.cuisine.replace(/\*/g, '')}</p>
-                    <p><strong>Price Range:</strong> {activity.priceRange.replace(/\*/g, '')}</p>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        ))
-      ) : (
-        <p>No daily itinerary available.</p>
-      )}
-    </div>
-  );
+  const renderDailyItinerary = () => {
+  
+    return (
+      <div className="itinerary-content">
+        {Array.isArray(recommendations.dailyItinerary) && recommendations.dailyItinerary.length > 0 ? (
+          recommendations.dailyItinerary.map((day, dayIndex) => (
+            <div key={dayIndex} className="day-itinerary">
+              <h3 className="itinerary-day-header">{day.title}</h3>
+  
+              {Array.isArray(day.activities) && day.activities.length > 0 ? (
+                day.activities.map((activity, index) => {
+  
+                  return (
+                    <div key={index} className="activity-item">
+                      <h4>{activity.title || 'Activity'}</h4>
+                      {Object.entries(activity).map(([key, value]) => (
+                        key !== "title" && value && (
+                          key.toLowerCase().includes("link") ? (
+                            <p key={key}>
+                              <strong>{key}:</strong>{" "}
+                              <span dangerouslySetInnerHTML={{ __html: value }} />
+                            </p>
+                          ) : (
+                            <p key={key}><strong>{key}:</strong> {value}</p>
+                          )
+                        )
+                      ))}
+                    </div>
+                  );
+                })
+              ) : (
+                <p>No activities listed for this day.</p>
+              )}
+            </div>
+          ))
+        ) : (
+          <p>No daily itinerary available.</p>
+        )}
+      </div>
+    );
+  };
   
   
   const renderBudgetBreakdown = () => {
@@ -258,26 +243,18 @@ function TripRecommendations({ recommendations }) {
       // Remove any asterisks and check if the line includes a section header keyword
       const sanitizedLine = line.replace(/\*/g, '');
       const isSectionHeader = sectionKeywords.some(keyword => sanitizedLine.toLowerCase().includes(keyword.toLowerCase()));
-      
+  
       if (isSectionHeader) {
         return <h4 key={index} style={{ color: '#007bff' }}>{sanitizedLine}</h4>;
       }
   
-      // Handle Markdown-style links (only display the first link per line)
-      const markdownLinkPattern = /\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/;
-      const match = sanitizedLine.match(markdownLinkPattern);
-      if (match) {
-        const label = match[1];
-        const url = match[2];
-        const textWithLink = sanitizedLine.replace(
-          markdownLinkPattern,
-          `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`
-        );
-        return <p key={index} dangerouslySetInnerHTML={{ __html: textWithLink }} />;
-      }
+      // ✅ Fix: Handle multiple Markdown-style links per line
+      const markdownLinkPattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+      const formattedText = sanitizedLine.replace(markdownLinkPattern, (_, label, url) => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+      });
   
-      // Render as regular paragraph text
-      return <p key={index}>{sanitizedLine}</p>;
+      return <p key={index} dangerouslySetInnerHTML={{ __html: formattedText }} />;
     };
   
     return (
@@ -286,6 +263,7 @@ function TripRecommendations({ recommendations }) {
       </div>
     );
   };
+  
   
   
 
@@ -305,3 +283,4 @@ function TripRecommendations({ recommendations }) {
 }
 
 export default TripRecommendations;
+
