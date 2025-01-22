@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-const PERPLEXITY_API_KEY = process.env.REACT_APP_PERPLEXITY_API_KEY;
+const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
 
 async function generateSection(prompt) {
   const payload = {
-    model: 'llama-3.1-70b-instruct',
+    model: 'gpt-4-turbo',
     messages: [
       { role: 'system', content: 'You are a helpful AI travel assistant.' },
       { role: 'user', content: prompt }
@@ -13,14 +13,16 @@ async function generateSection(prompt) {
   };
 
   try {
-    const response = await axios.post('https://api.perplexity.ai/chat/completions', payload, {
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', payload, {
       headers: {
-        'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json'
       }
     });
+
+    console.log('AI Response:', JSON.stringify(response.data, null, 2)); // Logs AI response
+
     const content = response.data.choices[0].message.content;
-    console.log(`Response for prompt: ${prompt}`, content);
     return content;
   } catch (error) {
     console.error('Error generating section:', error);
@@ -29,49 +31,51 @@ async function generateSection(prompt) {
 }
 
 function parseFlightsResponse(content) {
-  const options = content.split(/\*\*Option \d+:.+?\*\*/).slice(1);
-  return options.map(optionText => {
-    const lines = optionText.trim().split('\n').map(line => line.trim());
+  if (!content || typeof content !== 'string') return [];
+
+  const flightSections = content.split(/### Option \d+:/).slice(1);
+  return flightSections.map(flightText => {
+    const lines = flightText.trim().split('\n').map(line => line.trim());
+
     return {
-      airline: getLineContent(lines, 'Airline:'),
-      flightNumber: getLineContent(lines, 'Flight Number:'),
-      departure: getLineContent(lines, 'Departure:'),
-      arrival: getLineContent(lines, 'Arrival:'),
-      duration: getLineContent(lines, 'Duration:'),
-      price: formatPrice(getLineContent(lines, 'Estimated Price:')),
-      bookingLink: extractLink(getLineContent(lines, 'Booking Link:'))
+      airline: getLineContent(lines, '**Airline:**') || 'Not specified',
+      flightNumber: getLineContent(lines, '**Flight Number:**') || 'N/A',
+      departure: getLineContent(lines, '**Departure:**') || 'N/A',
+      arrival: getLineContent(lines, '**Arrival:**') || 'N/A',
+      duration: getLineContent(lines, '**Duration:**') || 'N/A',
+      layovers: getLineContent(lines, '**Layovers:**') || 'None',
+      price: formatPrice(getLineContent(lines, '**Estimated Price:**')) || 'N/A',
+      bookingLink: extractLink(getLineContent(lines, '**Booking Link:**') || 'No booking link available')
     };
   });
 }
 
-function parseAccommodationResponse(content) {
-  if (!content || typeof content !== 'string') {
-    console.error('Accommodation content is undefined or not a string');
-    return [];
-  }
 
-  const hotels = content.split(/\*\*Hotel \d+:/).slice(1); // Split on "Hotel 1:", "Hotel 2:", etc.
+
+
+
+function parseAccommodationResponse(content) {
+  if (!content || typeof content !== 'string') return [];
+
+  const hotels = content.split(/### Hotel \d+:/).slice(1);
   return hotels.map(hotelText => {
     const lines = hotelText.trim().split('\n').map(line => line.trim());
 
-    // Find the line with the name and star rating, typically the first line in each hotel block
-    const nameLine = lines.find(line => /\(\d+-star\)/.test(line)) || 'Name not available';
-
-    const hotel = {
-      name: nameLine.replace(/\*\*/g, '').split('(')[0].trim(), // Extract the name before the star rating
-      location: getLineContent(lines, 'Location:'),
-      nearbyAttractions: getLineContent(lines, 'Nearby attractions include'),
-      nightlyRate: getLineContent(lines, 'Nightly rate:').split(' ')[2] || 'Rate unavailable',
-      totalRate: getLineContent(lines, 'Total rate for 7 nights:'),
-      stars: nameLine.match(/\((\d+)-star\)/)?.[1] || null, // Extract the star rating
-      amenities: getLineContent(lines, 'Key amenities:'),
-      description: getLineContent(lines, 'Brief description:'),
-      bookingLink: extractLink(getLineContent(lines, 'Booking link:')),
+    return {
+      name: getLineContent(lines, '**Name:**') || 'Unnamed Hotel',
+      stars: getLineContent(lines, '**Star Rating:**')?.replace('-star', '') || 'N/A',
+      location: getLineContent(lines, '**Location:**') || 'Location not available',
+      nearbyAttractions: getLineContent(lines, '**Nearby Attractions:**') || 'None listed',
+      nightlyRate: formatPrice(getLineContent(lines, '**Nightly Rate:**')) || 'N/A',
+      totalRate: formatPrice(getLineContent(lines, '**Total Rate for**')) || 'N/A',
+      amenities: getLineContent(lines, '**Key Amenities:**') || 'No amenities listed',
+      description: getLineContent(lines, '**Brief Description:**') || 'No description available',
+      bookingLink: extractLink(getLineContent(lines, '**Booking Link:**') || 'No booking link available')
     };
-
-    return hotel;
   });
 }
+
+
 
 
 
@@ -91,50 +95,48 @@ function formatTime(timeString) {
 }
 
 function parseDailyItineraryResponse(content) {
-  if (!content || typeof content !== 'string') {
-    console.error('Daily Itinerary content is undefined or not a string');
-    return [];
-  }
+  if (!content || typeof content !== 'string') return [];
 
-  const days = content.split('**Day');
-  return days.slice(1).map(dayText => {
+  console.log("🔍 AI Itinerary Raw Response:", content); // Debugging log
+
+  const days = content.split(/### Day \d+:/).slice(1);
+  return days.map(dayText => {
     const details = dayText.trim().split('\n').map(line => line.trim()).filter(line => line);
-    const dayTitle = details[0] ? `Day ${details[0].split(':')[0].trim()}` : 'Day';
+    const title = details[0] || 'Day';
+
     const activities = [];
     let currentActivity = {};
 
     details.slice(1).forEach(line => {
-      if (line.startsWith('*')) {
-        if (Object.keys(currentActivity).length > 0) {
-          activities.push(currentActivity);
-          currentActivity = {};
-        }
-        const [title, info] = line.split(':');
-        if (info) {
-          const [name, time] = info.split('(');
-          currentActivity.title = title.replace('*', '').trim();
-          currentActivity.name = name.trim();
-          currentActivity.time = time ? formatTime(time.replace(')', '').trim()) : 'Time not specified';
-        }
-      } else if (line.startsWith('+')) {
-        if (line.includes('Location:')) {
-          currentActivity.location = line.replace('+ Location:', '').trim();
-        } else if (line.includes('Description:')) {
-          currentActivity.description = line.replace('+ Description:', '').trim();
-        } else if (line.includes('Link:')) {
-          const linkMatch = line.match(/\[(.*?)\]\((.*?)\)/);
-          currentActivity.linkText = linkMatch ? linkMatch[1] : 'Link';
-          currentActivity.link = linkMatch ? linkMatch[2] : '#';
+      if (line.startsWith('#### ')) {
+        if (Object.keys(currentActivity).length > 0) activities.push(currentActivity);
+        currentActivity = {};
+        currentActivity.title = line.replace('#### ', '').trim();
+      } else if (line.includes(':')) {
+        let [key, ...values] = line.split(':'); // Capture full value (fixes truncated text)
+        if (values.length) {
+          let formattedValue = values.join(':').trim(); // Reassemble split parts
+
+          // ✅ Fix for correctly extracting full Markdown links
+          const markdownLinkPattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+          formattedValue = formattedValue.replace(markdownLinkPattern, (_, label, url) => {
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+          });
+
+          currentActivity[key.trim()] = formattedValue;
         }
       }
     });
 
-    if (Object.keys(currentActivity).length > 0) {
-      activities.push(currentActivity);
-    }
-    return { title: dayTitle, activities };
+    if (Object.keys(currentActivity).length > 0) activities.push(currentActivity);
+    
+    console.log("✅ Parsed Itinerary Day:", { title, activities }); // Debugging log
+
+    return { title, activities };
   });
 }
+
+
 
 
 
@@ -143,8 +145,20 @@ function parseBudgetBreakdownResponse(content) {
 }
 
 function parseAdditionalTipsResponse(content) {
-  return content.split('\n').map(line => line.trim()).filter(line => line);
+  if (!content || typeof content !== 'string') return [];
+
+  return content.split('\n')
+    .map(line => line.trim())
+    .filter(line => line)
+    .map(line => {
+      // ✅ Fix for correctly extracting full Markdown links
+      const markdownLinkPattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+      return line.replace(markdownLinkPattern, (_, label, url) => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+      });
+    });
 }
+
 
 export async function generateFullItinerary(tripDetails) {
   const { destination, startDate, endDate, travelers, budget, currency, origin, preferences } = tripDetails;
@@ -162,30 +176,132 @@ export async function generateFullItinerary(tripDetails) {
   };
 
   const prompts = {
-    flights: `Provide 2-3 detailed flight options from ${tripDetailsForAI.origin} to ${tripDetailsForAI.destination} for a trip on ${tripDetailsForAI.startDate} and a return on ${tripDetailsForAI.endDate}. Take into account a preference for ${tripDetailsForAI.preferences}. For each option, include:
-      - Airline name
-      - Flight number
-      - Departure and arrival times
-      - Duration
-      - Estimated price
-      - Booking link.
-    `,
-    accommodation: `I need information on three distinct hotels in ${tripDetailsForAI.destination} for a ${tripDuration}-day trip from ${tripDetailsForAI.startDate} to ${tripDetailsForAI.endDate} with a total budget of ${tripDetailsForAI.budget} ${tripDetailsForAI.currency}. Take into account a preference for ${tripDetailsForAI.preferences}. For each hotel, include:
-      - Hotel name and star rating, beginning each hotel with "Hotel 1:", "Hotel 2:", and "Hotel 3:"
-      - Location with nearby attractions
-      - Nightly rate and total rate for all nights
-      - Key amenities
-      - Brief description
-      - Booking link.
-    `,
-    transportation: `Recommend the best mode of local transportation in ${tripDetailsForAI.destination}. Take into account a preference for ${tripDetailsForAI.preferences}. If car rental is advised, suggest 2-3 options with prices and booking link.`,
-    dailyItinerary: `Create a detailed itinerary for each day of a ${tripDuration}-day trip to ${tripDetailsForAI.destination}. Include activities that match a preference for ${tripDetailsForAI.preferences}. For each day, include:
-      - Morning activity with location, description, and link
-      - Lunch recommendation with restaurant name, cuisine, price range, and link
-      - Afternoon activity with details and link
-      - Dinner recommendation with details and link
-    `,
-    budgetBreakdown: `Provide an estimated budget breakdown for a ${tripDuration}-day trip to ${tripDetailsForAI.destination} for ${tripDetailsForAI.travelers} traveler(s) with a budget of ${tripDetailsForAI.budget} ${tripDetailsForAI.currency}. Include costs for flights, accommodation, local transportation, daily meals, activities, and attractions, considering a preference for ${tripDetailsForAI.preferences}.`,
+    flights: `Provide exactly 3 detailed flight options from ${tripDetailsForAI.origin} to ${tripDetailsForAI.destination} for a trip on ${tripDetailsForAI.startDate} and a return on ${tripDetailsForAI.endDate}. If no direct flights exist, suggest alternative routes. Each flight must include:
+      ### Option 1:
+      - **Airline:** [Airline Name]
+      - **Flight Number:** [Flight Number]
+      - **Departure:** [Departure City, Date, Time, Timezone]
+      - **Arrival:** [Arrival City, Date, Time, Timezone]
+      - **Duration:** [Total Flight Duration]
+      - **Layovers:** [If applicable, list layover cities, duration]
+      - **Estimated Price:** [$XXX - $YYY]
+      - **Booking Link:** [Provide a valid booking link for the airline]
+
+      ### Option 2:
+      (Same format as Option 1)
+
+      ### Option 3:
+      (Same format as Option 1)
+
+      Ensure that all flights contain valid airline names, prices, and booking links. If no flights are available, suggest nearby alternative airports.` 
+    ,
+    accommodation: `Provide details on exactly 3 recommended hotels in ${tripDetailsForAI.destination} for a ${tripDuration}-day stay from ${tripDetailsForAI.startDate} to ${tripDetailsForAI.endDate} within a total budget of ${tripDetailsForAI.budget} ${tripDetailsForAI.currency}. Each hotel must include:
+
+        ### Hotel 1:
+        - **Name:** [Hotel Name]
+        - **Star Rating:** [e.g., 3-star, 4-star, 5-star]
+        - **Location:** [Address, Proximity to key attractions]
+        - **Nearby Attractions:** [List top attractions within walking distance]
+        - **Nightly Rate:** [$XX per night]
+        - **Total Rate for ${tripDuration} Nights:** [$XXX - $YYY]
+        - **Key Amenities:** [Free WiFi, Pool, Breakfast, Parking, etc.]
+        - **Guest Rating:** [e.g., 4.5/5 on TripAdvisor, Booking.com, etc.]
+        - **Brief Description:** [Summary of hotel experience]
+        - **Booking Link:** [Provide a valid booking link]
+
+        ### Hotel 2:
+        (Same format as Hotel 1)
+
+        ### Hotel 3:
+        (Same format as Hotel 1)
+
+        Ensure all hotels are in safe and accessible locations, with high ratings and verified booking links. If budget is too low, suggest alternatives within range.`
+    ,
+    transportation: `Provide the best modes of local transportation in ${tripDetailsForAI.destination} based on a preference for ${tripDetailsForAI.preferences}. Include:
+
+      ### Public Transport:
+      - **Best Option:** [Metro/Bus/Ferries/Trams available]
+      - **Pricing:** [$X per ride / $Y per day pass]
+      - **Coverage:** [Best for city center, tourist areas, or outskirts]
+      - **Ride Time Estimate:** [Average travel times for common routes]
+
+      ### Ride-Sharing Apps:
+      - **Available Services:** [Uber, Lyft, Bolt, etc.]
+      - **Pricing Estimate:** [$X per mile/km]
+      - **Safety & Reliability:** [Trusted apps, peak hour pricing insights]
+
+      ### Car Rental:
+      - **Recommended Companies:** [Hertz, Avis, Europcar, etc.]
+      - **Pricing Estimate:** [$XX per day + additional fees]
+      - **Best for:** [e.g., Exploring countryside, national parks]
+      - **Booking Link:** [Provide direct car rental links]
+
+      Suggest the best mode of transport for safety, budget, and convenience.`
+    ,
+    dailyItinerary: `Create a structured daily itinerary for a ${tripDuration}-day trip to ${tripDetailsForAI.destination}. Focus on activities matching the preference for ${tripDetailsForAI.preferences}. Each day should include:
+
+    ### Day 1:
+    #### Morning Activity:
+    - **Activity:** [E.g., Guided city tour]
+    - **Location:** [Attraction or meeting point]
+    - **Time:** [Start-End Time]
+    - **Description:** [Brief summary]
+    - **Price Estimate:** [$XX per person]
+    - **Booking Link:** [Provide a valid booking link]
+
+    #### Lunch:
+    - **Restaurant:** [Name]
+    - **Cuisine Type:** [e.g., Italian, Seafood, Street Food]
+    - **Price Range:** [$X - $Y per person]
+    - **Description:** [Brief summary]
+    - **Booking Link:** [If applicable]
+
+    #### Afternoon Activity:
+    (Same format as Morning Activity)
+
+    #### Dinner:
+    (Same format as Lunch)
+
+    #### Optional Evening Entertainment:
+    - **Suggested Activity:** [e.g., Live Music, Bar, Theatre]
+    - **Location:** [Address]
+    - **Booking Link:** [If available]
+
+    Repeat this structure for each day of the trip, ensuring all activities have prices, timing, and booking links.`
+    ,
+    budgetBreakdown: `Provide a detailed estimated budget breakdown for a ${tripDuration}-day trip to ${tripDetailsForAI.destination} for ${tripDetailsForAI.travelers} traveler(s) with a total budget of ${tripDetailsForAI.budget} ${tripDetailsForAI.currency}. Include:
+
+    ### Flights:
+    - **Estimated Cost:** [$XXX per person]
+    - **Best Deals Found:** [Yes/No]
+    - **Booking Link:** [If applicable]
+
+    ### Accommodation:
+    - **Estimated Cost:** [$XX per night, $XXX total]
+    - **Hotel Suggested:** [Hotel Name]
+    - **Booking Link:** [If applicable]
+
+    ### Transportation:
+    - **Total Estimated Cost:** [$XX for public transport / rental]
+    - **Breakdown:** [Daily transport costs]
+
+    ### Meals:
+    - **Total Estimated Cost:** [$XX per day, $XXX total]
+    - **Restaurants Included:** [Yes/No]
+
+    ### Activities:
+    - **Total Estimated Cost:** [$XX for tickets, excursions]
+    - **Breakdown:** [Entry fees, guided tours, special experiences]
+
+    ### Miscellaneous Expenses:
+    - **Estimated Cost:** [$XX for shopping, emergencies]
+
+    ### Total Estimated Budget:
+    - **Total:** [$XXXX]
+    - **Buffer Amount Suggested:** [$XX for unforeseen expenses]
+
+    Ensure the breakdown aligns with the given budget and provides the most cost-effective options.`
+    ,
     additionalTips: `Provide additional travel tips for ${tripDetailsForAI.destination} with a focus on ${tripDetailsForAI.preferences}. Include local customs, must-try local dishes, weather information, and links to reputable travel guides.`
   };
 
@@ -241,9 +357,7 @@ function formatPrice(priceText) {
 }
 
 function extractLink(text) {
-  if (typeof text === 'string') {
-    const match = text.match(/\[(.*?)\]\((.*?)\)/);
-    return match ? match[2] : 'Book Here';
-  }
-  return 'Book Here';
+  const markdownLinkPattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+  return text.replace(markdownLinkPattern, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 }
+
