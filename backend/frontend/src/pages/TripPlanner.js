@@ -44,7 +44,7 @@ function TripPlanner() {
     }
 
     return () => clearInterval(intervalId);
-  }, [loading]);
+  }, [loading, loadingMessages]);
 
   const handleFormSubmit = async (formData) => {
     setLoading(true);

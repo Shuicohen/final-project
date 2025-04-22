@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserTrips, deleteTrip } from '../services/dbService';
 import './SavedTrips.css';
@@ -39,11 +39,7 @@ function SavedTrips() {
   const { user } = useAuth();
   const [expandedTripId, setExpandedTripId] = useState(null);
 
-  useEffect(() => {
-    fetchTrips();
-  }, [user]);
-
-  async function fetchTrips() {
+  const fetchTrips = useCallback(async () => {
     if (!user || !user.userid) {
       setLoading(false);
       setError('Please log in to view your saved trips.');
@@ -58,7 +54,11 @@ function SavedTrips() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [user]);
+
+  useEffect(() => {
+    fetchTrips();
+  }, [fetchTrips]);
 
   async function handleDelete(tripId) {
     try {

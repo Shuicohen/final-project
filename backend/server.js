@@ -12,7 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: 'https://ai-travel-planner-7o5n.onrender.com',
+  origin: ['http://localhost:3000', 'https://ai-travel-planner-7o5n.onrender.com'],
   credentials: true,
 }));
 app.use(express.json());
@@ -108,19 +108,8 @@ app.post('/api/refresh-token', (req, res) => {
 app.post('/api/register', userController.registerUser);
 app.post('/api/login', userController.loginUser);
 app.post('/api/logout', userController.logoutUser);
-app.get('/api/auth', verifyToken, userController.verifyAuth);
 app.get('/api/auth/verify', verifyToken, userController.verifyAuth);
 app.get('/api/users', verifyToken, userController.getUsers);
-
-// Verify authentication route
-app.get('/auth/verify', (req, res) => {
-  console.log('Request user object:', req.user); // Debugging line
-  if (req.user) {  // Assuming `req.user` is set correctly after authentication
-    res.json({ user: req.user });
-  } else {
-    res.status(401).json({ message: 'Not authenticated' });
-  }
-});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

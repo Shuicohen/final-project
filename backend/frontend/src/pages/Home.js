@@ -10,7 +10,9 @@ function Home() {
         <section className="home__hero">
           <h1>Welcome to AI Travel Planner</h1>
           <p>Let AI help you create your perfect travel experience with personalized recommendations for flights, accommodations, and things to do.</p>
-          <Link to="/plan" className="home__cta-button">Start Planning</Link>
+          <div className="home__cta-container">
+            <Link to="/plan" className="home__cta-button">Start Planning</Link>
+          </div>
         </section>
       </div>
 
@@ -44,9 +46,9 @@ function Home() {
         <section className="home__how-it-works">
           <h2>How It Works</h2>
           <div className="home__steps">
-            <p>Enter your destination and travel dates.</p>
-            <p>Get personalized recommendations for flights, hotels, and activities.</p>
-            <p>Save your favorites and create a tailored itinerary.</p>
+            <p>Enter your destination and travel dates</p>
+            <p>Get personalized recommendations for flights, hotels, and activities</p>
+            <p>Save your favorites and create a tailored itinerary</p>
             <p>Book directly through the platform, and enjoy your trip!</p>
           </div>
         </section>

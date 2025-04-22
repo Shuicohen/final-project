@@ -3,16 +3,6 @@ import './TripRecommendations.css';
 
 function TripRecommendations({ recommendations }) {
   const [expandedSection, setExpandedSection] = useState(null);
-  const [nights, setNights] = useState(2);
-
-  // ✅ useEffect to log and debug daily itinerary
-  useEffect(() => {
-    if (recommendations && recommendations.dailyItinerary) {
-      console.log("✅ Updated Daily Itinerary:", recommendations.dailyItinerary);
-    } else {
-      console.log("❌ No Itinerary Data Available");
-    }
-  }, [recommendations.dailyItinerary]); // Runs when dailyItinerary updates
 
   const toggleSection = (section) => {
     setExpandedSection((prev) => (prev === section ? null : section));

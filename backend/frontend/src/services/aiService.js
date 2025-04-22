@@ -83,17 +83,6 @@ function parseTransportationResponse(content) {
   return content.split('\n').map(line => line.trim()).filter(line => line);
 }
 
-// Helper function to format time
-function formatTime(timeString) {
-  const time = parseInt(timeString, 10);
-  if (isNaN(time)) return 'Time not specified';
-
-  // Convert to 12-hour format with AM/PM
-  const period = time >= 12 ? 'PM' : 'AM';
-  const formattedTime = time > 12 ? time - 12 : time;
-  return `${formattedTime}:00 ${period}`;
-}
-
 function parseDailyItineraryResponse(content) {
   if (!content || typeof content !== 'string') return [];
 
